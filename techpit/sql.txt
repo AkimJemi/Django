@@ -1,0 +1,14 @@
+.headers ON
+.mode column
+select * from django_content_type;
+
+#実行結果
+
+id          app_label   model
+----------  ----------  ----------
+1           admin       logentry
+2           auth        permission
+3           auth        group
+4           auth        user
+5           contenttyp  contenttyp
+6           sessions    session
