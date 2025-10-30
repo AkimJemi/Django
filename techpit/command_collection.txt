@@ -1,0 +1,20 @@
+python manage.py runserver    
+
+
+python manage.py makemigrations
+
+pip install Pillow
+
+python manage.py makemigrations
+
+python manage.py migrate
+
+
+
+python manage.py dbshell
+.tables
+.exit
+
+python manage.py createsuperuser
+
+admin admin
