@@ -1,0 +1,33 @@
+{% extends './base.html' %}
+{% block contents %}
+<!-- wrap始まり -->
+<div id="wrap" class="clearfix">
+    <div class="content">
+        <div class="main">
+            <h1>記事一覧</h1>
+            <!-- ここから記事一覧-->
+            {% for item in object_list %}
+            <section>
+                <h1>{{item.title}}</h1>
+                <ul>
+                    <li>
+                        <!-- ここから下を追加-->
+                        <a>
+                            <img src="http://127.0.0.1:8000/media/{{ item.category.category_image }}">
+                        </a>
+                        <!-- ここまでを追加-->
+                        <div class="title"><b>{{ item.category }}</b></div>
+                    </li>
+                    <p>{{ item.content }}</p>
+                </ul>
+            </section>
+            {% endfor %}
+            <!-- ここまで記事一覧-->
+        </div> <!-- end main -->
+            <!-- ここから下を追加 -->
+            {% include 'blog/widgets/side_category.html' %}
+
+            <!-- ここまでを追加 -->
+    </div> <!-- end content-->
+</div> <!-- end wrap -->
+{% endblock %}

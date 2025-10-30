@@ -1,0 +1,24 @@
+{% extends './base.html' %}
+
+{% block contents %}
+  <!-- wrap始まり -->
+  <div id="wrap" class="clearfix">
+    <div class="content">
+      <div class="main">
+        <section class="career">
+        <h1>登録完了</h1>
+        <div>記事の新規登録が完了しました。</div>
+      </section>
+
+ <table>
+  <tr>
+  <td><p class="btn"><a href="{% url 'blog:blog_list' %}">戻る</a></td>
+    </tr>
+  </table>  
+     </div> <!-- end main -->
+     <!-- カテゴリ一覧の表示 start -->
+     {% include 'blog/widgets/side_category.html' %}
+    　<!-- カテゴリ一覧の表示 end -->
+    </div> <!-- end content-->
+  </div>   <!-- end wrap -->
+{% endblock %}

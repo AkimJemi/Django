@@ -1,0 +1,41 @@
+<!-- ここから下を追加 --> 
+{% load static %} 
+<!-- ここまでを追加 --> 
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Djangoブログサイト</title>
+    <link rel="stylesheet" href="https://github.com/nicolas-cusan/destyle.css">
+    <link href="https://fonts.googleapis.com/css?family=Bitter:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+        integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+</head>
+    <!-- ここから下を追加 --> 
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <!-- ここまでを追加 --> 
+<body id="portfolio">
+    <!-- header始まり -->
+    <header>
+        <nav>
+            <ul class="global-nav">
+                <li><a href="{% url 'blog:blog_list' %}">記事一覧</a></li>
+                <li><a href="{% url 'blog:create' %}">新規作成</a></li>
+            </ul>
+        </nav>
+    </header>
+    <!-- header終わり -->
+
+    {% block contents%}
+    <!-- ここに個別のテンプレートの内容が組み込まれる-->
+    {% endblock %}
+
+    <!-- footer始まり -->
+    <footer>
+        <small>(C)2022 django-blog</small>
+    </footer>
+    <!-- footer終わり -->
+</body>
+
+</html>
