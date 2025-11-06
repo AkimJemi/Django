@@ -5,6 +5,8 @@ from django.views.generic import ListView, DetailView, CreateView, DeleteView, U
 from .models import Blog, Category  # 追加
 from . forms import BlogForm  # 追加
 from django.urls import reverse_lazy  # 追加
+from django.contrib.auth.mixins import LoginRequiredMixin  # 追加
+
 # Create your views here.
 
 # ----ここから追加----
@@ -40,7 +42,7 @@ class BlogListView(ListView):
         return context
 
 
-class BlogCreateView(CreateView):
+class BlogCreateView(LoginRequiredMixin, CreateView):  # 変更箇所
 
     model = Blog
     form_class = BlogForm

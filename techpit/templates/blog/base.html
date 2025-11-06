@@ -21,7 +21,17 @@
         <nav>
             <ul class="global-nav">
                 <li><a href="{% url 'blog:blog_list' %}">記事一覧</a></li>
-                <li><a href="{% url 'blog:create' %}">新規作成</a></li>
+             {% if request.user.is_authenticated %}
+            <li><a href="{% url 'blog:create' %}">新規作成</a></li>
+            <li><a class="nav-link">ユーザ名：{{ request.user.get_username }}</a></li>
+            <li><a class="nav-link" href="{% url 'account_logout' %}">
+            <i class="fa fa-fw fa-sign-out"></i>ログアウト</a></li>
+            <!--ここから下を追加-->
+            {% else %}
+            <li><a class="nav-link" href="{% url 'account_login' %}">
+                <i class="fa fa-fw fa-sign-in"></i>ログイン</a></li>
+            <!--ここまでを追加-->
+            {% endif %}
             </ul>
         </nav>
     </header>
