@@ -1,0 +1,46 @@
+{% extends './base.html' %}
+
+{% block contents %}
+  <!-- wrap始まり -->
+  <div id="wrap" class="clearfix">
+    <div class="content">
+      <div class="main">
+        <section class="career">
+        <h1>記事の詳細画面</h1>
+        <table>
+          <tr>
+            <th>タイトル</th>
+            <td>{{ object.title }}
+            </td>
+          </tr>
+          <tr>
+            <th>カテゴリ</th>
+            <td> {{ object.category }}</td>
+          </tr>
+          <tr>
+            <th>内容</th>
+            <td>{{ object.content|linebreaksbr }}
+            </td>
+          </tr>
+          <tr>
+            <th>作成日時</th>
+            <td>{{ object.postdate }}
+            </td>
+          </tr>  
+        </table>
+      </section>
+      <table>
+        <tr>
+        <td><p class="btn"><a href="{% url 'blog:blog_list' %}">戻る</a></td>
+        <td><p class="btn-edit"><a href="{% url 'blog:edit' object.pk %}">編集</a></td>
+        <td><p class="btn-delete"><a href="{% url 'blog:delete' object.pk %}">削除</a></td>
+          </tr>
+        </table>  
+ <!-- ここまで記事の詳細-->
+     </div> <!-- end main -->
+     <!-- カテゴリ一覧の表示 start -->
+     {% include 'blog/widgets/side_category.html' %}
+    　<!-- カテゴリ一覧の表示 end -->
+    </div> <!-- end content-->
+  </div>   <!-- end wrap -->
+  {% endblock %}

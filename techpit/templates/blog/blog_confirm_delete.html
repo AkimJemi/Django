@@ -6,23 +6,13 @@
     <div class="content">
       <div class="main">
         <section class="career">
-          {% if message_type == "create" %}
-          <h1>記事の新規登録</h1>
-          {% elif message_type == "edit" %} 
-          <h1>記事の更新</h1>
-          {% endif %}
-        <form method="POST">
-            <!-- ここから下を修正-->
-            <table>
-            {{ form }}
-            </table>
-            <!-- ここまでを修正-->
-        {% csrf_token %}
-
-        <button class="button" type="submit">登録</button>
-
-        </form>
-        </section>
+          <p>タイトル【<span class=delete-title>{{ object }}</span>】 のデータを削除していいですか?</p>
+          <form method="post">
+            <button class="button">削除</button>
+          
+            {% csrf_token %}
+          </form>
+      </section>
  <!-- ここまで記事の登録-->
 
  <table>
@@ -36,4 +26,4 @@
     　<!-- カテゴリ一覧の表示 end -->
     </div> <!-- end content-->
   </div>   <!-- end wrap -->
-{% endblock %}
+  {% endblock %}

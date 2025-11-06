@@ -12,5 +12,9 @@ class BlogAdmin(admin.ModelAdmin):
 # ここまでを追加
 
 
-admin.site.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'category_name')
+
+
+admin.site.register(Category, CategoryAdmin)  # 修正
 admin.site.register(Blog, BlogAdmin)
