@@ -1,0 +1,625 @@
+{% block contents %}
+<div id="wrap" class="clearfix">
+    <div class="content">
+        <div class="main">
+            <h1 class="page-title">実行ライン一覧</h1>
+            {% for item in executeline_list %}
+                <div class="execute-line-card" id="card-{{ item.no }}">
+                    
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <strong class="no-text">No. {{ item.no }}</strong> / {{ item.get_type_display }}
+                        </h2>
+                        
+                        <form id="form-{{ item.no }}" method="post" action="" class="execute-form"> 
+                            <input type="text" style="display: none;">
+                            {% csrf_token %}
+                            <input type="hidden" name="no" value="{{ item.no }}"> 
+                            <input type="hidden" name="type" value="{{ item.type }}" id="line-input-{{ item.no }}">
+                            <input type="hidden" name="line" value="{{ item.line }}">
+                            
+                            <button type="button" class="btn-edit" data-no="{{ item.no }}">
+                                修正
+                            </button>
+                            
+                            <button type="button" class="btn-execute" data-no="{{ item.no }}">
+                                実行
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card-meta">
+                        [利用: {{ item.get_available_user_display }}] | 
+                        [出力: {{ item.get_output_type_display }}] | 
+                        [更新: {{ item.update_date|date:"Y-m-d" }}]
+                        
+                        {% if item.type == 3 %}
+                        <div class="line-input-area">
+                            <input 
+                                id="line-input-val-{{ item.no }}"
+                                type="text" 
+                                name="content_input_no_{{ item.no }}"
+                                placeholder="実行に必要な値を入力してください..."
+                                class="user-input-field"
+                                form="form-{{ item.no }}" 
+                                value=""
+                            >
+                        </div>
+                        {% endif %}
+
+                        <div class="line-detail-container {% if item.type == 3 %}is-type-3{% endif %}">
+                            
+                            <div class="line-detail" id="display-{{ item.no }}">
+                                <p>{{ item.line|linebreaksbr }}</p>
+                            </div>
+                            
+                            <textarea 
+                                id="edit-{{ item.no }}" 
+                                class="line-edit-field hidden-edit-area" 
+                                name="edited_content_no_{{ item.no }}" 
+                                form="form-{{ item.no }}" 
+                            >{{ item.line }}</textarea>
+                            
+                            {% if item.type == 3 %}
+                            <div class="line-detail" id="display2-{{ item.no }}">
+                                <p>{{ item.line2|linebreaksbr }}</p>
+                            </div>
+                            <textarea 
+                                id="edit2-{{ item.no }}" 
+                                class="line-edit-field hidden-edit-area" 
+                                name="edited_content2_no_{{ item.no }}" 
+                                form="form-{{ item.no }}" 
+                            >{{ item.line2 }}</textarea>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div id="result-container-{{ item.no }}" class="result-container"></div>
+                </div>
+                <hr class="hidden-divider"> 
+            {% endfor %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.keyCode === 13) {
+                    if (event.target.tagName !== 'TEXTAREA') {
+                        event.preventDefault();
+                    }
+                }
+            });
+        });
+        const executeButtons = document.querySelectorAll('.btn-execute');
+        const editButtons = document.querySelectorAll('.btn-edit');
+        const filterButtons = document.querySelectorAll('.btn-filter');
+
+        function setupCopyButton(containerElement) {
+            const copyButton = containerElement.querySelector('.btn-copy');
+            if (copyButton) {
+                copyButton.addEventListener('click', function() {
+                    const queryPre = containerElement.querySelector('.executed-query-pre');
+                    if (queryPre) {
+                        const textToCopy = queryPre.textContent;
+
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(textToCopy).then(() => {
+                                const originalText = copyButton.textContent;
+                                copyButton.textContent = 'コピー完了';
+                                setTimeout(() => {
+                                    copyButton.textContent = originalText;
+                                }, 1500);
+                            }).catch(err => {
+                                console.error('クリップボードへの書き込みに失敗:', err);
+                                alert('クリップボードへのコピーに失敗しました。');
+                            });
+                        } else {
+                            alert('お使いのブラウザではコピー機能がサポートされていません。');
+                        }
+                    }
+                });
+            }
+        }
+
+        filterButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+                const lineNo = this.getAttribute('data-no');
+                console.log("Filter No:", lineNo);
+            });
+        });
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const lineNo = this.getAttribute('data-no');
+                
+                const displayArea1 = document.getElementById(`display-${lineNo}`);
+                const editArea1 = document.getElementById(`edit-${lineNo}`);
+                
+                const displayArea2 = document.getElementById(`display2-${lineNo}`);
+                const editArea2 = document.getElementById(`edit2-${lineNo}`);
+                
+                const executeButton = document.querySelector(`.btn-execute[data-no="${lineNo}"]`);
+
+                if (!editArea1) return; 
+
+                const isEditing = editArea1.style.display !== 'none'; 
+
+                if (!isEditing) {
+                    this.classList.add('active');
+                    this.textContent = '修正キャンセル'; 
+                    
+                    if (displayArea1) displayArea1.style.display = 'none'; 
+                    editArea1.style.display = 'block';
+                    
+                    if (editArea2) {
+                        editArea2.style.display = 'block';
+                        if (displayArea2) displayArea2.style.display = 'none';
+                    }
+
+                    executeButton.textContent = '保存して実行';
+                } else {
+                    this.classList.remove('active');
+                    this.textContent = '修正';
+                    
+                    if (displayArea1) displayArea1.style.display = 'block'; 
+                    editArea1.style.display = 'none';
+                    
+                    if (editArea2) {
+                        editArea2.style.display = 'none';
+                        if (displayArea2) displayArea2.style.display = 'block';
+                    }
+
+                    executeButton.textContent = '実行';
+                }
+            });
+        });
+
+
+        executeButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const lineNo = this.getAttribute('data-no');
+                const inputValue = document.getElementById(`line-input-val-${lineNo}`);
+                const lineType = document.getElementById(`line-input-${lineNo}`);
+                if(lineType.value == '3' && inputValue.value == ""){
+                    alert("実行に必要な値を入力してください。");
+                    return
+                }
+                const container = document.getElementById(`result-container-${lineNo}`);
+                let form = document.getElementById(`form-${lineNo}`);
+                const editArea1 = document.getElementById(`edit-${lineNo}`);
+                const editButton = document.querySelector(`.btn-edit[data-no="${lineNo}"]`);
+                const isEditing = editArea1 && editArea1.style.display !== 'none';
+                this.disabled = true;
+                this.textContent = '実行中...';
+                container.innerHTML = `<div class="status-processing">実行中...</div>`;
+                let formData = new FormData(form);
+                console.log("form:", form);
+                console.log("formData:", formData);
+                let modificationFlagInput = null;
+                if (isEditing) {
+                    modificationFlagInput = document.createElement('input');
+                    modificationFlagInput.type = 'hidden';
+                    modificationFlagInput.name = 'modification_flag';
+                    modificationFlagInput.value = '1';
+                    form.appendChild(modificationFlagInput);
+                    
+                    formData = new FormData(form);
+                }
+
+                try {
+                    const response = await fetch(form.action || window.location.href, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrftoken },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        container.innerHTML = generateResultHtml(result);
+                        setupCopyButton(container); 
+                        
+                        if (isEditing) {
+                            
+                            if (result.success) {
+                                const displayArea1 = document.getElementById(`display-${lineNo}`);
+                                const editArea1 = document.getElementById(`edit-${lineNo}`);
+                                if (displayArea1 && editArea1) {
+                                    const editedText1 = editArea1.value.replace(/\n/g, '<br>');
+                                    displayArea1.innerHTML = `<p>${editedText1}</p>`;
+                                }
+
+                                const displayArea2 = document.getElementById(`display2-${lineNo}`);
+                                const editArea2 = document.getElementById(`edit2-${lineNo}`);
+                                if (displayArea2 && editArea2) {
+                                    const editedText2 = editArea2.value.replace(/\n/g, '<br>');
+                                    displayArea2.innerHTML = `<p>${editedText2}</p>`;
+                                }
+                            }
+                            
+                            const displayArea1 = document.getElementById(`display-${lineNo}`);
+                            const editArea1 = document.getElementById(`edit-${lineNo}`);
+                            const displayArea2 = document.getElementById(`display2-${lineNo}`);
+                            const editArea2 = document.getElementById(`edit2-${lineNo}`);
+                            
+                            if (editButton) {
+                                editButton.classList.remove('active');
+                                editButton.textContent = '修正';
+                            }
+                            if (displayArea1) displayArea1.style.display = 'block';
+                            if (editArea1) editArea1.style.display = 'none';
+                            
+                            if (displayArea2) displayArea2.style.display = 'block';
+                            if (editArea2) editArea2.style.display = 'none';
+
+                            this.textContent = '実行'; 
+                            this.disabled = false;
+                        }
+
+                    } else {
+                        container.innerHTML = generateErrorHtml(result.error || "サーバー処理エラーが発生しました。", result);
+                    }
+
+                } catch (error) {
+                    container.innerHTML = generateErrorHtml("通信エラー: " + error.message, {});
+                } finally {
+                    if (modificationFlagInput) {
+                        form.removeChild(modificationFlagInput);
+                    }
+                    
+                    this.disabled = false;
+                    if (!isEditing) {
+                        this.textContent = '実行'; 
+                    }
+                }
+            });
+        });
+
+
+        function generateResultHtml(result) {
+            const statusClass = result.success ? 'status-success' : 'status-failure';
+            const typeString = String(result.type).toUpperCase();
+            
+            let html = `
+            <div class="execution-status-box ${statusClass}">
+                <h4 style="font-size: 1.1em;">
+                    ${result.success ? '✅ 実行成功' : '❌ 実行失敗'} (${result.type})
+                </h4>`;
+
+            let queryHeaderHtml = `
+            <div class="executed-query-header">
+                <p>実行クエリ:</p>`;
+
+            if (typeString === 'REGEX' && result.success) { 
+                queryHeaderHtml += `<button type="button" class="btn-copy">コピー</button>`;
+            }
+            
+            queryHeaderHtml += `</div>`; 
+
+            html += queryHeaderHtml;
+
+            html += `
+                <pre class="executed-query-pre">${result.executed_query}</pre>
+            `;
+            
+            if (typeString === 'SELECT' && result.data && result.data.length >= 0) {
+                html += `<h5 style="font-size: 1em; margin-top: 10px; margin-bottom: 5px;">取得結果 (${result.count}件)</h5>
+                <div class="result-table-wrapper">
+                <table class="result-table">
+                    <thead>
+                        <tr>`;
+                if(result.data.length > 0){
+                    result.columns.forEach(col => {
+                        html += `<th>${col}</th>`;
+                    });
+                    html += `       </tr>
+                                    </thead>
+                                    <tbody>`;
+                    result.data.forEach(row => { 
+                        html += `<tr>`;
+                        row.forEach(cell => {
+                            html += `<td>${cell === null ? 'NULL' : cell}</td>`;
+                        });
+                        html += `</tr>`;
+                    });
+                    html += `       </tbody>
+                                </table>
+                                </div>`;
+                } else {
+                    html += `<th style="text-align: center;">データがありません</th></tr></thead><tbody></tbody></table></div>`;
+                }
+            } else if (typeString === 'DML/DDL') { 
+                html += `<p style="font-weight: bold;">変更クエリ結果:</p>
+                            <p>${result.count} 行が影響を受けました。</p>`;
+            } else if (result.error) {
+                html += `
+                <p style="font-weight: bold;">エラー詳細:</p>
+                <pre class="error-pre">${result.error}</pre>`;
+            }
+            
+            html += `</div>`; 
+            return html;
+        }
+
+        function generateErrorHtml(errorMessage, fullResult = {}) {
+            let errorDetails = fullResult.error || '詳細なエラー情報はサーバーログを確認してください。';
+            return `
+                <div class="execution-status-box status-failure">
+                    <h4 style="font-size: 1.1em;">❌ 実行失敗</h4>
+                    <p style="font-weight: bold;">エラー:</p>
+                    <pre class="error-pre">${errorMessage}</pre>
+                </div>`;
+        }
+    });
+</script>
+
+<style>
+.hidden-edit-area {
+    display: none;
+}
+.hidden-divider {
+    display: none;
+}
+.card-title .no-text {
+    font-weight: bold;
+}
+
+#wrap {
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 10px; 
+    font-family: Arial, sans-serif;
+}
+.page-title {
+    border-bottom: 2px solid #007bff; 
+    padding-bottom: 5px; 
+    margin-bottom: 15px; 
+    font-size: 1.5em; 
+    color: #333;
+}
+
+.execute-line-card {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.card-title {
+    margin: 0; 
+    font-size: 1.4em; 
+    color: #007bff;
+}
+
+.execute-form {
+    margin: 0;
+    display: flex;
+    gap: 5px;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #343a40;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.btn-edit.active {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-execute {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.btn-execute:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.card-meta {
+    font-size: 0.85em; 
+    color: #6c757d; 
+    margin-bottom: 8px;
+}
+
+.line-input-area {
+    margin-top: 8px;
+    margin-bottom: 10px;
+}
+.user-input-field {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; 
+    font-size: 1.0em;
+    font-family: Arial, sans-serif;
+}
+
+.line-detail-container {
+    margin-top: 5px; 
+}
+.line-detail {
+    background-color: #f0f0f0; 
+    padding: 8px;
+    border-radius: 3px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 1.0em;
+    color: #343a40;
+}
+.line-detail p {
+    margin: 0;
+}
+
+.line-edit-field {
+    width: 100%;
+    height: 150px; 
+    padding: 8px;
+    border: 1px solid #007bff;
+    border-radius: 3px;
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 1.0em;
+    resize: vertical; 
+}
+
+.line-detail-container.is-type-3 {
+    display: flex; 
+    gap: 10px; 
+}
+.line-detail-container.is-type-3 .line-detail,
+.line-detail-container.is-type-3 .line-edit-field {
+    flex-grow: 1; 
+    width: 50%;
+}
+
+.result-container {
+    margin-top: 15px;
+}
+
+.execution-status-box {
+    padding: 10px; 
+    border-radius: 4px;
+    background-color: #fff; 
+    border: 1px solid #ccc; 
+    margin-bottom: 15px;
+}
+
+.status-success {
+    border-color: #28a745; 
+}
+.status-success h4 {
+    color: #155724; 
+    background-color: #d4edda; 
+    padding: 5px 10px;
+    margin: -10px -10px 10px -10px; 
+    border-radius: 4px 4px 0 0;
+    font-weight: bold;
+}
+
+.status-failure {
+    border-color: #dc3545; 
+}
+.status-failure h4 {
+    color: #721c24; 
+    background-color: #f8d7da; 
+    padding: 5px 10px;
+    margin: -10px -10px 10px -10px;
+    border-radius: 4px 4px 0 0;
+    font-weight: bold;
+}
+
+.status-processing { 
+    color: #007bff; 
+    font-weight: bold;
+}
+
+.executed-query-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 5px; 
+}
+.executed-query-header p {
+    margin: 0;
+    font-weight: bold;
+}
+
+.executed-query-pre {
+    background-color: #f0f0f0; 
+    padding: 8px; 
+    border-radius: 3px; 
+    font-size: 0.85em; 
+    overflow-x: auto;
+    margin-top: 0;
+}
+
+
+.result-table-wrapper {
+    max-height: 150px; 
+    overflow-y: auto; 
+    border: 1px solid #dee2e6;
+}
+.result-table {
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 0.8em;
+}
+.result-table th, .result-table td {
+    border: 1px solid #dee2e6; 
+    padding: 4px;
+    text-align: left; 
+}
+.result-table thead tr {
+    background-color: #e9ecef;
+}
+.result-table th {
+    text-align: left;
+}
+.result-table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+.error-pre {
+    background-color: #fdd; 
+    padding: 8px; 
+    border-radius: 3px; 
+    font-size: 0.85em; 
+    overflow-x: auto;
+}
+
+.btn-copy {
+    background-color: #007bff; 
+    color: white;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.2s;
+}
+.btn-copy:hover {
+    background-color: #0056b3;
+}
+.btn-copy:active {
+    background-color: #004085;
+}
+</style>

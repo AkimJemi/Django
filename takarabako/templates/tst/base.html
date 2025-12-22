@@ -1,0 +1,18 @@
+{% load static %} 
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    
+    <meta charset="UTF-8">
+    <title>Djangoブログサイト</title>
+    <link rel="stylesheet" href="https://github.com/nicolas-cusan/destyle.css">
+    </head>
+<body>
+    
+    {% block contents %}
+    {% endblock %}
+
+    <script src="{% static 'script.js' %}"></script>
+</body>
+</html>

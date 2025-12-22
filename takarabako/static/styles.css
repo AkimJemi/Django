@@ -1,0 +1,195 @@
+/*
+ * 実行ライン一覧画面用 スタイルシート
+ */
+
+/* ======================================================
+ * 全体レイアウト
+ * ====================================================== */
+#wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+}
+
+/* メインタイトル */
+.main h1 {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    color: #333;
+}
+
+/* 実行ラインがない場合のメッセージ */
+.main > p {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* ======================================================
+ * 実行ラインカード (execute-line-card)
+ * ====================================================== */
+.execute-line-card {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+}
+
+/* カードヘッダー（No.と実行ボタンを含む行） */
+.execute-line-card > div:nth-child(1) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+/* No. / Type の表示 */
+.execute-line-card h2 {
+    margin: 0;
+    font-size: 1.4em;
+    color: #007bff;
+}
+
+.execute-line-card h2 strong {
+    font-weight: bold;
+}
+
+/* 実行ボタンのフォーム */
+.execute-line-card form {
+    margin: 0;
+}
+
+/* 実行ボタン */
+.btn-execute {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+/* 利用ユーザー/出力タイプ/更新日 の詳細情報 */
+.execute-line-card > div:nth-child(2) {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+/* 実行ラインのコード表示エリア */
+.line-detail {
+    background-color: #f0f0f0;
+    padding: 8px;
+    border-radius: 3px;
+    white-space: pre-wrap; /* 改行を保持 */
+    font-family: monospace;
+    font-size: 1.0em;
+    color: #343a40;
+    margin-top: 5px;
+}
+
+.line-detail p {
+    margin: 0;
+}
+
+/* 結果表示コンテナ */
+[id^="result-container-"] {
+    margin-top: 15px;
+}
+
+/* ======================================================
+ * 実行結果表示 (JavaScriptで動的に挿入される要素)
+ * ====================================================== */
+
+/* 実行中のメッセージ (JavaScriptでインラインスタイルが適用されていた部分) */
+.result-running {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* 実行結果の共通ボックス */
+.result-box { /* generateResultHtml, generateErrorHtml で適用されるコンテナ */
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* 成功時のスタイル */
+.result-success {
+    border: 1px solid #c3e6cb;
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* 失敗時のスタイル */
+.result-failure {
+    border: 1px solid #f5c6cb;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* 結果のタイトル */
+.result-box h4 {
+    margin-top: 0;
+    font-size: 1.1em;
+}
+
+/* 実行クエリ表示エリア */
+.result-box pre {
+    background-color: #f0f0f0;
+    padding: 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    overflow-x: auto;
+}
+
+/* 失敗時のpreタグの背景色 (エラー詳細) */
+.result-failure pre {
+    background-color: #fdd; /* 元のJSのインラインスタイルを再現 */
+}
+
+/* SELECT結果の件数タイトル */
+.result-box h5 {
+    font-size: 1em;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+/* SELECT結果のテーブルコンテナ */
+.table-container { 
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+}
+
+/* SELECT結果のテーブル */
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8em;
+}
+
+.table-container thead tr {
+    background-color: #e9ecef;
+}
+
+.table-container th, .table-container td {
+    border: 1px solid #dee2e6;
+    padding: 4px;
+    text-align: left;
+}
+
+.table-container tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+/* 省略メッセージ */
+.omission-note {
+    margin-top: 5px;
+    font-size: 0.75em;
+    text-align: right;
+}

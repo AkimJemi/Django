@@ -1,0 +1,53 @@
+{% extends 'tst/base.html' %}
+{% block contents %}
+<div id="wrap" class="clearfix">
+    <div class="content">
+        <div class="main">
+            
+            <h1>実行ライン一覧</h1> 
+            
+            {% for item in executeline_list %}
+                <section class="execute-line-card" id="card-{{ item.no }}">
+                    
+                    <div>
+                        <h2>
+                            <strong>No. {{ item.no }}</strong> / {{ item.get_type_display }}
+                        </h2>
+                        
+                        <form id="form-{{ item.no }}" method="post" action=""> 
+                            {% csrf_token %}
+                            <input type="hidden" name="no" value="{{ item.no }}"> 
+                            <input type="hidden" name="type" value="{{ item.type }}">
+                            <input type="hidden" name="line" value="{{ item.line }}">
+                            <input type="hidden" name="line" value="{{ item.line }}">
+                            
+                            <button type="button" 
+                                class="btn-execute" 
+                                data-no="{{ item.no }}">
+                                実行
+                            </button>
+                        </form>
+                    </div>
+
+                    <div>
+                        [利用: {{ item.get_available_user_display }}] | 
+                        [出力: {{ item.get_output_type_display }}] | 
+                        [更新: {{ item.update_date|date:"Y-m-d" }}]
+                    </div>
+                    
+                    <div class="line-detail">
+                        <p>
+                            {{ item.line|linebreaksbr }}
+                        </p>
+                    </div>
+                    
+                    <div id="result-container-{{ item.no }}"></div>
+
+                </section>
+                <hr style="display: none;"> 
+            {% empty %}
+                <p>現在、実行ラインは登録されていません。</p>
+            {% endfor %}
+            
+        </div> </div> </div> 
+{% endblock %}
