@@ -73,7 +73,7 @@ class BlogDetailView(DetailView):
         return context
 
 
-class BlogEditView(UpdateView):
+class BlogEditView(LoginRequiredMixin, UpdateView):#変更箇所
 
     model = Blog
     form_class = BlogForm
@@ -96,7 +96,7 @@ def edit_done(request):
         'category_list': category_list})
 
 
-class BlogDeleteView(DeleteView):
+class BlogDeleteView(LoginRequiredMixin, DeleteView):#変更箇所
 
     model = Blog
     template_name = 'blog/blog_confirm_delete.html'
